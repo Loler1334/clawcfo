@@ -16,7 +16,11 @@ app.use(
 app.use(express.json());
 
 app.get("/health", (_req, res) => {
-  res.json({ ok: true, service: "personal-cfo-agent" });
+  res.status(200).json({ ok: true, service: "personal-cfo-agent" });
+});
+
+app.get("/", (_req, res) => {
+  res.status(200).json({ ok: true, service: "personal-cfo-agent", health: "/health" });
 });
 
 app.get("/status", (_req, res) => {
@@ -74,8 +78,19 @@ cron.schedule("0 9 * * 5", () => {
   runEvaluationCycle().catch(console.error);
 });
 
-app.listen(config.port, config.host, () => {
-  console.log(`Personal CFO Agent API → http://${config.host}:${config.port}`);
+const port = config.port;
+const host = "0.0.0.0";
+
+app.listen(port, host, () => {
+  console.log(`ClawCFO Agent listening on ${host}:${port}`);
   console.log(`Simulation mode: ${config.simulationMode}`);
   if (config.contractAddress) console.log(`Mantle contract: ${config.contractAddress}`);
+});
+
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught exception:", err);
+});
+
+process.on("unhandledRejection", (err) => {
+  console.error("Unhandled rejection:", err);
 });

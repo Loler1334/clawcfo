@@ -6,4 +6,4 @@ watchPatterns = ["packages/agent/**", "Dockerfile"]
 
 [deploy]
 healthcheckPath = "/health"
-healthcheckTimeout = 60
+healthcheckTimeout = 120
