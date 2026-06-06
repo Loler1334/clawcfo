@@ -1,0 +1,5 @@
+# Force Railway to use Dockerfile at repo root, not Nixpacks auto-build.
+providers = []
+
+[phases.build]
+cmds = ["echo 'Use Dockerfile builder. Set Root Directory to / and Dockerfile path to Dockerfile in Railway Settings.'"]

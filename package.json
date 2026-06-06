@@ -10,6 +10,7 @@
     "packages/web"
   ],
   "scripts": {
+    "start": "npm run start -w packages/agent",
     "build": "npm run build --workspaces --if-present",
     "dev:agent": "npm run dev -w packages/agent",
     "dev:bot": "npm run dev -w packages/bot",

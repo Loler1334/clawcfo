@@ -1,0 +1,9 @@
+# If Railway deploys this folder as a separate service, use the root Dockerfile.
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "../../Dockerfile"
+watchPatterns = ["packages/agent/**", "Dockerfile"]
+
+[deploy]
+healthcheckPath = "/health"
+healthcheckTimeout = 60
