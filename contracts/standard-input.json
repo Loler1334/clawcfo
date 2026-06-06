@@ -1,0 +1,30 @@
+{
+  "language": "Solidity",
+  "sources": {
+    "contracts/PersonalCFORegistry.sol": {
+      "content": "// SPDX-License-Identifier: MIT\r\npragma solidity ^0.8.24;\r\n\r\n/**\r\n * @title PersonalCFORegistry\r\n * @notice On-chain audit log for Personal CFO agent decisions on Mantle.\r\n *         Satisfies hackathon requirement: AI-powered function callable on-chain.\r\n */\r\ncontract PersonalCFORegistry {\r\n    struct Rule {\r\n        string ruleType;\r\n        string paramsJson;\r\n        bool active;\r\n        uint256 createdAt;\r\n    }\r\n\r\n    struct Decision {\r\n        uint256 id;\r\n        address agentOwner;\r\n        string action;\r\n        string reasoning;\r\n        string inputToken;\r\n        string outputToken;\r\n        uint256 inputAmount;\r\n        uint256 outputAmount;\r\n        bool executed;\r\n        uint256 timestamp;\r\n        bytes32 txHash;\r\n    }\r\n\r\n    address public owner;\r\n    uint256 public decisionCount;\r\n    uint256 public ruleCount;\r\n\r\n    mapping(uint256 => Rule) public rules;\r\n    mapping(uint256 => Decision) public decisions;\r\n    mapping(address => uint256[]) public ownerDecisions;\r\n    mapping(address => uint256[]) public ownerRules;\r\n\r\n    event RuleCreated(uint256 indexed ruleId, address indexed agentOwner, string ruleType);\r\n    event RuleToggled(uint256 indexed ruleId, bool active);\r\n    event AgentTriggered(address indexed caller, uint256 timestamp);\r\n    event DecisionLogged(\r\n        uint256 indexed decisionId,\r\n        address indexed agentOwner,\r\n        string action,\r\n        bool executed\r\n    );\r\n\r\n    modifier onlyOwner() {\r\n        require(msg.sender == owner, \"Not owner\");\r\n        _;\r\n    }\r\n\r\n    constructor() {\r\n        owner = msg.sender;\r\n    }\r\n\r\n    /// @notice On-chain AI trigger - anyone can call to request agent evaluation cycle.\r\n    function triggerAgentEvaluation() external returns (uint256 triggerId) {\r\n        emit AgentTriggered(msg.sender, block.timestamp);\r\n        return block.timestamp;\r\n    }\r\n\r\n    function createRule(\r\n        string calldata ruleType,\r\n        string calldata paramsJson\r\n    ) external returns (uint256 ruleId) {\r\n        ruleId = ++ruleCount;\r\n        rules[ruleId] = Rule({\r\n            ruleType: ruleType,\r\n            paramsJson: paramsJson,\r\n            active: true,\r\n            createdAt: block.timestamp\r\n        });\r\n        ownerRules[msg.sender].push(ruleId);\r\n        emit RuleCreated(ruleId, msg.sender, ruleType);\r\n    }\r\n\r\n    function toggleRule(uint256 ruleId, bool active) external {\r\n        require(ruleId > 0 && ruleId <= ruleCount, \"Invalid rule\");\r\n        require(rules[ruleId].active != active || rules[ruleId].createdAt > 0, \"No rule\");\r\n        rules[ruleId].active = active;\r\n        emit RuleToggled(ruleId, active);\r\n    }\r\n\r\n    /// @notice Log an agent decision permanently on Mantle.\r\n    function logDecision(\r\n        address agentOwner,\r\n        string calldata action,\r\n        string calldata reasoning,\r\n        string calldata inputToken,\r\n        string calldata outputToken,\r\n        uint256 inputAmount,\r\n        uint256 outputAmount,\r\n        bool executed,\r\n        bytes32 txHash\r\n    ) external onlyOwner returns (uint256 decisionId) {\r\n        decisionId = ++decisionCount;\r\n        decisions[decisionId] = Decision({\r\n            id: decisionId,\r\n            agentOwner: agentOwner,\r\n            action: action,\r\n            reasoning: reasoning,\r\n            inputToken: inputToken,\r\n            outputToken: outputToken,\r\n            inputAmount: inputAmount,\r\n            outputAmount: outputAmount,\r\n            executed: executed,\r\n            timestamp: block.timestamp,\r\n            txHash: txHash\r\n        });\r\n        ownerDecisions[agentOwner].push(decisionId);\r\n        emit DecisionLogged(decisionId, agentOwner, action, executed);\r\n    }\r\n\r\n    function getOwnerDecisions(address agentOwner) external view returns (uint256[] memory) {\r\n        return ownerDecisions[agentOwner];\r\n    }\r\n\r\n    function getOwnerRules(address agentOwner) external view returns (uint256[] memory) {\r\n        return ownerRules[agentOwner];\r\n    }\r\n\r\n    function getDecision(uint256 decisionId) external view returns (Decision memory) {\r\n        require(decisionId > 0 && decisionId <= decisionCount, \"Invalid decision\");\r\n        return decisions[decisionId];\r\n    }\r\n\r\n    function getRule(uint256 ruleId) external view returns (Rule memory) {\r\n        require(ruleId > 0 && ruleId <= ruleCount, \"Invalid rule\");\r\n        return rules[ruleId];\r\n    }\r\n}\r\n"
+    }
+  },
+  "settings": {
+    "optimizer": {
+      "enabled": true,
+      "runs": 200
+    },
+    "viaIR": true,
+    "evmVersion": "paris",
+    "outputSelection": {
+      "*": {
+        "*": [
+          "abi",
+          "evm.bytecode",
+          "evm.deployedBytecode",
+          "evm.methodIdentifiers",
+          "metadata"
+        ],
+        "": [
+          "ast"
+        ]
+      }
+    }
+  }
+}

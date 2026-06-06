@@ -56,7 +56,7 @@ contract PersonalCFORegistry {
         owner = msg.sender;
     }
 
-    /// @notice On-chain AI trigger — anyone can call to request agent evaluation cycle.
+    /// @notice On-chain AI trigger - anyone can call to request agent evaluation cycle.
     function triggerAgentEvaluation() external returns (uint256 triggerId) {
         emit AgentTriggered(msg.sender, block.timestamp);
         return block.timestamp;
