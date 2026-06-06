@@ -1,0 +1,23 @@
+{
+  "name": "personal-cfo-claw",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Personal CFO Agent for Mantle Turing Test Hackathon 2026 — RealClaw + Byreal Skills",
+  "workspaces": [
+    "contracts",
+    "packages/agent",
+    "packages/bot",
+    "packages/web"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "dev:agent": "npm run dev -w packages/agent",
+    "dev:bot": "npm run dev -w packages/bot",
+    "dev:web": "npm run dev -w packages/web",
+    "deploy:contract": "npm run deploy -w contracts",
+    "verify:contract": "npm run verify -w contracts"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

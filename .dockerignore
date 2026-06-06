@@ -1,0 +1,10 @@
+node_modules
+.next
+.git
+data
+.env
+*.md
+packages/web
+packages/bot
+contracts/cache
+contracts/artifacts

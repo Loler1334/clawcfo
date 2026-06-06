@@ -1,0 +1,16 @@
+node_modules/
+dist/
+.next/
+.cache/
+.env
+.env.local
+.env.*.local
+coverage/
+typechain-types/
+artifacts/
+cache/
+deployments/
+*.log
+.DS_Store
+data/
+.turbo/
