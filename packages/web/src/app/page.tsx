@@ -409,7 +409,7 @@ export default function Home() {
       <section className="section">
         <div className="section-header center">
           <div className="section-label">Why ClawCFO</div>
-          <h2 className="section-title">Built for trust, not hype</h2>
+          <h2 className="section-title">Built for trust</h2>
         </div>
 
         <div className="features-grid">
