@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { AgentOfflineGuide } from "../components/AgentOfflineGuide";
+import { GettingStarted } from "../components/GettingStarted";
 import { WalletButton } from "../components/WalletButton";
 
 const API = process.env.NEXT_PUBLIC_AGENT_API ?? "http://127.0.0.1:3847";
@@ -257,16 +257,8 @@ export default function Home() {
             </div>
           </div>
           <div className="panel-body">
-            {!online && <AgentOfflineGuide />}
-
             {message && <div className={`toast ${error ? "error" : ""}`}>{message}</div>}
-
-            {online && (
-              <p style={{ color: "var(--text-secondary)", fontSize: "0.9rem", lineHeight: 1.6, marginBottom: 0 }}>
-                ClawCFO runs autonomously against your configured strategies. Each action is executed via
-                decentralized liquidity protocols and recorded on-chain for full transparency.
-              </p>
-            )}
+            <GettingStarted offline={!online} />
           </div>
         </div>
       </section>
