@@ -7,7 +7,7 @@ import {
   logDecisionOnChain,
   triggerOnChainEvaluation,
 } from "./mantle-logger.js";
-import { getDecisions, getRules, saveDecision } from "./storage.js";
+import { getDecisions, getRules, saveDecision, saveOnChainTx } from "./storage.js";
 import type { AgentDecision, AgentStatus, CFOReule } from "./types.js";
 
 // Simulated 7-day price history for demo (dip_buy / take_profit)
@@ -105,8 +105,19 @@ async function evaluateRule(rule: CFOReule, balances: Awaited<ReturnType<typeof 
   return null;
 }
 
+function recordMantleTx(hash: string | null, type: string, label: string) {
+  if (!hash) return;
+  saveOnChainTx({
+    hash,
+    type,
+    label,
+    timestamp: new Date().toISOString(),
+  });
+}
+
 export async function runEvaluationCycle(): Promise<AgentDecision[]> {
-  await triggerOnChainEvaluation();
+  const triggerTx = await triggerOnChainEvaluation();
+  recordMantleTx(triggerTx, "trigger", "triggerAgentEvaluation");
 
   const rules = getRules().filter((r) => r.active);
   const balances = await getWalletBalances();
@@ -116,11 +127,15 @@ export async function runEvaluationCycle(): Promise<AgentDecision[]> {
     const decision = await evaluateRule(rule, balances);
     if (!decision) continue;
 
+    const owner = config.byrealWallet ?? getMantleAddress() ?? "0x0000000000000000000000000000000000000000";
+    const mantleTx = await logDecisionOnChain(owner, decision);
+    if (mantleTx) {
+      decision.mantleTxHash = mantleTx;
+      recordMantleTx(mantleTx, "decision", `logDecision: ${decision.action}`);
+    }
+
     saveDecision(decision);
     newDecisions.push(decision);
-
-    const owner = config.byrealWallet ?? getMantleAddress() ?? "0x0000000000000000000000000000000000000000";
-    await logDecisionOnChain(owner, decision);
   }
 
   return newDecisions;
@@ -129,7 +144,8 @@ export async function runEvaluationCycle(): Promise<AgentDecision[]> {
 export async function addRule(rule: CFOReule): Promise<CFOReule> {
   const { saveRule } = await import("./storage.js");
   saveRule(rule);
-  await createRuleOnChain(rule.type, JSON.stringify(rule));
+  const tx = await createRuleOnChain(rule.type, JSON.stringify(rule));
+  recordMantleTx(tx, "rule", `createRule: ${rule.type}`);
   return rule;
 }
 

@@ -5,6 +5,14 @@ import type { AgentDecision, CFOReule } from "./types.js";
 
 const rulesFile = path.join(config.dataDir, "rules.json");
 const decisionsFile = path.join(config.dataDir, "decisions.json");
+const onChainFile = path.join(config.dataDir, "onchain-txs.json");
+
+export interface StoredOnChainTx {
+  hash: string;
+  type: string;
+  label: string;
+  timestamp: string;
+}
 
 function ensureDataDir() {
   fs.mkdirSync(config.dataDir, { recursive: true });
@@ -49,4 +57,15 @@ export function saveDecision(decision: AgentDecision) {
   const decisions = getDecisions();
   decisions.unshift(decision);
   writeJson(decisionsFile, decisions.slice(0, 100));
+}
+
+export function getOnChainTxs(): StoredOnChainTx[] {
+  return readJson<StoredOnChainTx[]>(onChainFile, []);
+}
+
+export function saveOnChainTx(tx: StoredOnChainTx) {
+  const txs = getOnChainTxs();
+  if (txs.some((t) => t.hash === tx.hash)) return;
+  txs.unshift(tx);
+  writeJson(onChainFile, txs.slice(0, 50));
 }

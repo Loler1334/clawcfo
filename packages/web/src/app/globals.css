@@ -598,6 +598,109 @@ button {
   line-height: 1.55;
 }
 
+/* ── On-chain proof ── */
+.proof-panel {
+  background: linear-gradient(135deg, rgba(62, 224, 160, 0.08), rgba(91, 141, 239, 0.06));
+  border: 1px solid rgba(62, 224, 160, 0.25);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+}
+
+.proof-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.proof-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(62, 224, 160, 0.15);
+  color: var(--accent);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.proof-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.proof-meta a {
+  color: var(--accent);
+}
+
+.proof-tx-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.proof-tx-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 1rem 1.1rem;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: border-color 0.2s;
+}
+
+.proof-tx-item:hover {
+  border-color: rgba(62, 224, 160, 0.35);
+}
+
+.proof-tx-label {
+  font-weight: 600;
+  font-size: 0.92rem;
+  margin-bottom: 0.25rem;
+}
+
+.proof-tx-hash {
+  font-family: ui-monospace, monospace;
+  font-size: 0.8rem;
+  color: var(--text-tertiary);
+  word-break: break-all;
+}
+
+.proof-tx-time {
+  font-size: 0.78rem;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+
+.proof-tx-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 0.85rem;
+  border-radius: 8px;
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-size: 0.82rem;
+  font-weight: 600;
+  border: 1px solid rgba(62, 224, 160, 0.2);
+  transition: background 0.2s;
+}
+
+.proof-tx-link:hover {
+  background: rgba(62, 224, 160, 0.2);
+}
+
 /* ── Footer ── */
 .footer {
   border-top: 1px solid var(--border);

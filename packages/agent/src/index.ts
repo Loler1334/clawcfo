@@ -2,6 +2,8 @@ import cors from "cors";
 import express from "express";
 import cron from "node-cron";
 import { addRule, getStatus, runEvaluationCycle } from "./cfo-engine.js";
+import { getOnChainProof } from "./onchain-proof.js";
+import { getMantleAddress } from "./mantle-logger.js";
 import { config } from "./config.js";
 import { createRuleFromTemplate, RULE_TEMPLATES } from "./rule-templates.js";
 import { getDecisions, getRules, toggleRule } from "./storage.js";
@@ -61,6 +63,15 @@ app.patch("/rules/:id", (req, res) => {
 
 app.get("/decisions", (_req, res) => {
   res.json(getDecisions());
+});
+
+app.get("/onchain-proof", async (_req, res) => {
+  try {
+    const proof = await getOnChainProof(getMantleAddress());
+    res.json(proof);
+  } catch (error) {
+    res.status(500).json({ error: String(error) });
+  }
 });
 
 app.post("/run", async (_req, res) => {

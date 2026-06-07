@@ -49,6 +49,7 @@ export interface AgentDecision {
   simulated: boolean;
   timestamp: string;
   onChainTxHash?: string;
+  mantleTxHash?: string;
 }
 
 export interface AgentStatus {

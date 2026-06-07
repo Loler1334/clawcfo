@@ -31,6 +31,23 @@ interface Decision {
   executed: boolean;
   simulated: boolean;
   timestamp: string;
+  mantleTxHash?: string;
+}
+
+interface OnChainProof {
+  network: string;
+  chainId: number;
+  contractAddress: string | null;
+  contractUrl: string | null;
+  agentAddress: string | null;
+  transactions: Array<{
+    hash: string;
+    type: string;
+    label: string;
+    timestamp: string;
+    explorerUrl: string;
+  }>;
+  source: string;
 }
 
 const RULE_ICONS: Record<string, { icon: string; color: string }> = {
@@ -60,16 +77,19 @@ export default function Home() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState(false);
   const [online, setOnline] = useState(true);
+  const [proof, setProof] = useState<OnChainProof | null>(null);
 
   const refresh = useCallback(async () => {
-    const [s, t, d] = await Promise.all([
+    const [s, t, d, p] = await Promise.all([
       fetch(`${API}/status`).then((r) => r.json()),
       fetch(`${API}/templates`).then((r) => r.json()),
       fetch(`${API}/decisions`).then((r) => r.json()),
+      fetch(`${API}/onchain-proof`).then((r) => r.json()),
     ]);
     setStatus(s);
     setTemplates(t);
     setDecisions(d);
+    setProof(p);
     setOnline(true);
     setError(false);
   }, []);
@@ -140,6 +160,7 @@ export default function Home() {
             <a href="#dashboard">Dashboard</a>
             <a href="#strategies">Strategies</a>
             <a href="#how-it-works">How it Works</a>
+            <a href="#onchain-proof">On-Chain Proof</a>
             <a href="#activity">Activity</a>
           </div>
           <div className="nav-actions">
@@ -245,6 +266,74 @@ export default function Home() {
                 </span>
               )}
             </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ── On-Chain Proof ── */}
+      <section className="section" id="onchain-proof" style={{ paddingTop: 0 }}>
+        <div className="proof-panel">
+          <div className="proof-header">
+            <div>
+              <div className="proof-badge">
+                <span className="hero-eyebrow-dot" />
+                Mantle Sepolia Testnet
+              </div>
+              <h2 className="section-title" style={{ marginTop: "0.75rem", marginBottom: "0.35rem" }}>
+                On-Chain Proof
+              </h2>
+              <p className="section-desc" style={{ marginBottom: 0 }}>
+                Every agent action is permanently recorded on Mantle. Verify any transaction on the explorer.
+              </p>
+            </div>
+            {proof?.contractUrl && (
+              <a href={proof.contractUrl} target="_blank" rel="noopener noreferrer" className="btn btn-ghost btn-sm">
+                View Contract ↗
+              </a>
+            )}
+          </div>
+
+          <div className="proof-meta">
+            <span>
+              <strong>Network:</strong> {proof?.network ?? "Mantle Sepolia Testnet"}
+            </span>
+            <span>
+              <strong>Chain ID:</strong> {proof?.chainId ?? 5003}
+            </span>
+            {proof?.agentAddress && (
+              <span>
+                <strong>Agent:</strong> {proof.agentAddress.slice(0, 6)}…{proof.agentAddress.slice(-4)}
+              </span>
+            )}
+          </div>
+
+          <div className="proof-tx-list">
+            {!proof?.transactions?.length && (
+              <div className="empty-state" style={{ padding: "2rem 1rem" }}>
+                <div className="empty-state-icon">⛓</div>
+                <p>No on-chain transactions yet.</p>
+                <p style={{ marginTop: "0.5rem", fontSize: "0.85rem" }}>
+                  Activate a strategy and run the agent to generate verifiable Mantle Sepolia transactions.
+                </p>
+              </div>
+            )}
+            {proof?.transactions?.map((tx) => (
+              <div key={tx.hash} className="proof-tx-item">
+                <div>
+                  <div className="proof-tx-label">{tx.label}</div>
+                  <div className="proof-tx-hash">{tx.hash}</div>
+                  <div className="proof-tx-time">{formatTime(tx.timestamp)}</div>
+                </div>
+                <a
+                  href={tx.explorerUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="proof-tx-link"
+                >
+                  Verify ↗
+                </a>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -414,6 +503,19 @@ export default function Home() {
                 <p className="activity-reason">{d.reasoning}</p>
                 <p className="activity-swap">
                   {d.inputAmount.toFixed(2)} {d.inputToken} → {d.outputAmount.toFixed(4)} {d.outputToken}
+                  {d.mantleTxHash && (
+                    <>
+                      {" · "}
+                      <a
+                        href={`https://sepolia.mantlescan.xyz/tx/${d.mantleTxHash}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: "var(--accent)" }}
+                      >
+                        Mantle tx ↗
+                      </a>
+                    </>
+                  )}
                 </p>
               </div>
               <span className="activity-time">{formatTime(d.timestamp)}</span>
