@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import { GettingStarted } from "../components/GettingStarted";
 import { StrategyCard } from "../components/StrategyCard";
@@ -157,9 +158,15 @@ export default function Home() {
       {/* ── Navigation ── */}
       <nav className="nav">
         <div className="nav-inner">
-          <a href="#" className="logo">
-            <span className="logo-mark">🦞</span>
-            ClawCFO
+          <a href="#" className="logo" aria-label="ClawCFO home">
+            <Image
+              src="/clawcfo-logo.png"
+              alt="ClawCFO"
+              width={132}
+              height={132}
+              className="logo-img"
+              priority
+            />
           </a>
           <div className="nav-links">
             <a href="#dashboard">Dashboard</a>

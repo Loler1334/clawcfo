@@ -88,21 +88,15 @@ button {
 .logo {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  font-weight: 700;
-  font-size: 1.15rem;
-  letter-spacing: -0.02em;
+  flex-shrink: 0;
 }
 
-.logo-mark {
-  width: 36px;
-  height: 36px;
+.logo-img {
+  height: 44px;
+  width: auto;
+  display: block;
   border-radius: 10px;
-  background: linear-gradient(135deg, var(--accent), var(--blue));
-  display: grid;
-  place-items: center;
-  font-size: 1.1rem;
-  box-shadow: 0 0 24px var(--accent-glow);
+  object-fit: contain;
 }
 
 .nav-links {
