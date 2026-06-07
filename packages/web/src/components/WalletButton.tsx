@@ -30,9 +30,13 @@ export function WalletButton() {
       window.open("https://phantom.app/", "_blank");
       return;
     }
-    const res = await provider.connect();
-    save({ ...wallets, solana: res.publicKey.toString() });
-    setOpen(false);
+    try {
+      const res = await provider.connect();
+      save({ ...wallets, solana: res.publicKey.toString() });
+      setOpen(false);
+    } catch {
+      setError("Phantom connection was cancelled or failed.");
+    }
   }
 
   async function connectMetaMask() {
@@ -43,21 +47,25 @@ export function WalletButton() {
       window.open("https://metamask.io/", "_blank");
       return;
     }
-    const accounts = await eth.request({ method: "eth_requestAccounts" });
-    await eth.request({
-      method: "wallet_addEthereumChain",
-      params: [
-        {
-          chainId: "0x138b",
-          chainName: "Mantle Sepolia",
-          rpcUrls: ["https://rpc.sepolia.mantle.xyz"],
-          nativeCurrency: { name: "MNT", symbol: "MNT", decimals: 18 },
-          blockExplorerUrls: ["https://sepolia.mantlescan.xyz"],
-        },
-      ],
-    }).catch(() => {});
-    save({ ...wallets, mantle: accounts[0] });
-    setOpen(false);
+    try {
+      const accounts = await eth.request({ method: "eth_requestAccounts" });
+      await eth.request({
+        method: "wallet_addEthereumChain",
+        params: [
+          {
+            chainId: "0x138b",
+            chainName: "Mantle Sepolia",
+            rpcUrls: ["https://rpc.sepolia.mantle.xyz"],
+            nativeCurrency: { name: "MNT", symbol: "MNT", decimals: 18 },
+            blockExplorerUrls: ["https://sepolia.mantlescan.xyz"],
+          },
+        ],
+      }).catch(() => {});
+      save({ ...wallets, mantle: accounts[0] });
+      setOpen(false);
+    } catch {
+      setError("MetaMask connection was cancelled or failed.");
+    }
   }
 
   function disconnect() {
@@ -97,14 +105,11 @@ export function WalletButton() {
         >
           {!connected ? (
             <>
-              <p style={{ fontSize: "0.8rem", color: "var(--text-secondary)", marginBottom: "0.75rem", lineHeight: 1.5 }}>
-                Connect your wallets. Keys never leave your browser.
-              </p>
               <button className="btn btn-ghost btn-sm" type="button" onClick={connectPhantom} style={{ width: "100%", marginBottom: "0.5rem" }}>
-                Phantom (Solana / swaps)
+                Phantom
               </button>
               <button className="btn btn-ghost btn-sm" type="button" onClick={connectMetaMask} style={{ width: "100%" }}>
-                MetaMask (Mantle logs)
+                MetaMask
               </button>
             </>
           ) : (

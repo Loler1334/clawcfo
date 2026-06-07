@@ -458,8 +458,7 @@ export default function Home() {
           <div className="feature-card">
             <h3>🧪 Risk-free demo</h3>
             <p>
-              Try every feature in demo mode with simulated portfolios before connecting
-              a real wallet.
+              Try every feature in demo mode with simulated portfolios before going live.
             </p>
           </div>
         </div>
