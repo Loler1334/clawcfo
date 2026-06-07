@@ -598,6 +598,98 @@ button {
   line-height: 1.55;
 }
 
+/* ── Offline guide ── */
+.offline-guide {
+  background: rgba(245, 166, 35, 0.06);
+  border: 1px solid rgba(245, 166, 35, 0.25);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.35rem;
+  margin-bottom: 1.25rem;
+}
+
+.offline-guide-header {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.offline-guide-icon {
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+.offline-guide-header h3 {
+  font-size: 1.05rem;
+  margin-bottom: 0.35rem;
+}
+
+.offline-guide-header p {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.offline-guide-section {
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.offline-guide-section:last-of-type {
+  border-bottom: none;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0;
+}
+
+.offline-guide-section h4 {
+  font-size: 0.88rem;
+  font-weight: 700;
+  margin-bottom: 0.6rem;
+  color: var(--warning);
+}
+
+.offline-guide-section ol {
+  margin-left: 1.2rem;
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+  line-height: 1.65;
+}
+
+.offline-guide-section ol li {
+  margin-bottom: 0.35rem;
+}
+
+.offline-guide-section p {
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+.offline-guide-section code,
+.offline-guide-note code {
+  font-family: ui-monospace, monospace;
+  font-size: 0.8rem;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  color: var(--text);
+}
+
+.offline-guide-section a {
+  color: var(--accent);
+  word-break: break-all;
+}
+
+.offline-guide-note {
+  margin-top: 1rem;
+  padding: 0.85rem 1rem;
+  background: var(--surface);
+  border-radius: 10px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
 /* ── On-chain proof ── */
 .proof-panel {
   background: linear-gradient(135deg, rgba(62, 224, 160, 0.08), rgba(91, 141, 239, 0.06));

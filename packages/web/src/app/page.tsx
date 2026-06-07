@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { AgentOfflineGuide } from "../components/AgentOfflineGuide";
 import { WalletButton } from "../components/WalletButton";
 
 const API = process.env.NEXT_PUBLIC_AGENT_API ?? "http://127.0.0.1:3847";
@@ -97,7 +98,7 @@ export default function Home() {
   useEffect(() => {
     refresh().catch(() => {
       setOnline(false);
-      setMessage("Agent offline - start the backend to enable live dashboard.");
+      setMessage("");
       setError(true);
     });
   }, [refresh]);
@@ -136,7 +137,8 @@ export default function Home() {
       );
       await refresh();
     } catch {
-      setMessage("Agent unavailable. Please ensure the backend is running.");
+      setOnline(false);
+      setMessage("");
       setError(true);
     } finally {
       setLoading(false);
@@ -255,17 +257,16 @@ export default function Home() {
             </div>
           </div>
           <div className="panel-body">
+            {!online && <AgentOfflineGuide />}
+
             {message && <div className={`toast ${error ? "error" : ""}`}>{message}</div>}
 
-            <p style={{ color: "var(--text-secondary)", fontSize: "0.9rem", lineHeight: 1.6, marginBottom: "1.5rem" }}>
-              ClawCFO runs autonomously against your configured strategies. Each action is executed via
-              decentralized liquidity protocols and recorded on-chain for full transparency.
-              {!online && (
-                <span style={{ display: "block", marginTop: "0.5rem", color: "var(--warning)" }}>
-                  Start the agent API to enable live controls.
-                </span>
-              )}
-            </p>
+            {online && (
+              <p style={{ color: "var(--text-secondary)", fontSize: "0.9rem", lineHeight: 1.6, marginBottom: 0 }}>
+                ClawCFO runs autonomously against your configured strategies. Each action is executed via
+                decentralized liquidity protocols and recorded on-chain for full transparency.
+              </p>
+            )}
           </div>
         </div>
       </section>
