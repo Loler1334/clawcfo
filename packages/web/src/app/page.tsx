@@ -297,9 +297,6 @@ export default function Home() {
             <span>
               <strong>Network:</strong> {proof?.network ?? "Mantle Sepolia Testnet"}
             </span>
-            <span>
-              <strong>Chain ID:</strong> {proof?.chainId ?? 5003}
-            </span>
             {proof?.agentAddress && (
               <span>
                 <strong>Agent:</strong> {proof.agentAddress.slice(0, 6)}…{proof.agentAddress.slice(-4)}
