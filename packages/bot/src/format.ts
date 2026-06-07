@@ -110,7 +110,7 @@ export const WELCOME_MESSAGE =
   `• Execute rules automatically (rebalance, buy dips, take profit)\n` +
   `• Log every decision on-chain on Mantle\n\n` +
   `<b>Quick start (3 steps):</b>\n` +
-  `1️⃣ Tap <b>"➕ Add Rule"</b> — pick a strategy template\n` +
+  `1️⃣ Tap <b>"➕ Add Rule"</b> — pick &amp; customize a strategy\n` +
   `2️⃣ Tap <b>"▶ Run Agent"</b> — agent checks if any rule should fire\n` +
   `3️⃣ Tap <b>"📜 History"</b> — see what the agent decided\n\n` +
   `<i>Tip: send /help anytime for the full guide.</i>`;
@@ -119,10 +119,10 @@ export const HELP_MESSAGE =
   `📖 <b>How to use Personal CFO Agent</b>\n\n` +
   `<b>Step 1 — Add a rule</b>\n` +
   `Send /addrule or tap "➕ Add Rule".\n` +
-  `Choose one of three templates:\n` +
-  `• <b>Weekly Rebalance</b> — auto-move % of one token into another\n` +
-  `• <b>Dip Buy</b> — buy when price drops\n` +
-  `• <b>Take Profit</b> — sell when price rises\n\n` +
+  `Choose a template, then customize with the buttons:\n` +
+  `• <b>Weekly Rebalance</b> — tokens, %, min balance\n` +
+  `• <b>Dip Buy</b> — token, drop %, buy amount\n` +
+  `• <b>Take Profit</b> — token, gain %, sell %\n\n` +
   `<b>Step 2 — Run the agent</b>\n` +
   `Send /run or tap "▶ Run Agent".\n` +
   `The agent checks your portfolio and executes matching rules.\n` +

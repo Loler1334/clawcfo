@@ -10,6 +10,17 @@ import {
   type Rule,
   WELCOME_MESSAGE,
 } from "./format.js";
+import {
+  applyConfigAction,
+  buildRulePayload,
+  clearSession,
+  configKeyboard,
+  formatConfigScreen,
+  parseConfigCallback,
+  startSession,
+  type StrategyType,
+  type TemplatesResponse,
+} from "./strategy-config.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, "../../../.env") });
@@ -174,29 +185,106 @@ async function handleAddRule(ctx: Context) {
   await safeReply(
     ctx,
     `➕ <b>Add a Rule</b>\n\n` +
-      `Pick a strategy below. Each rule uses smart defaults — no setup needed.\n\n` +
-      `• <b>Weekly Rebalance</b> — move 20% USDC → mSOL weekly\n` +
-      `• <b>Dip Buy</b> — buy $50 mSOL when price drops 5%\n` +
-      `• <b>Take Profit</b> — sell 50% mSOL when price rises 10%`,
+      `Pick a strategy, customize the settings, then activate.\n\n` +
+      `• <b>Weekly Rebalance</b> — move % between tokens\n` +
+      `• <b>Dip Buy</b> — buy on price drop\n` +
+      `• <b>Take Profit</b> — sell on price rise`,
     ruleMenu()
   );
 }
 
-bot.action(/^rule_(.+)$/, async (ctx) => {
-  const type = ctx.match[1];
-  await ctx.answerCbQuery("Adding rule…");
+async function openStrategyConfig(ctx: Context, type: StrategyType) {
+  const userId = ctx.from?.id;
+  if (!userId) return;
+
+  try {
+    const templates = await api<TemplatesResponse>("/templates");
+    const template = templates[type];
+    if (!template) {
+      await safeReply(ctx, `⚠️ Unknown strategy type.`, ruleMenu());
+      return;
+    }
+
+    startSession(userId, type, template.defaults);
+    const text = formatConfigScreen(type, template.defaults);
+    const keyboard = configKeyboard(type);
+
+    if (ctx.callbackQuery && "message" in ctx.callbackQuery && ctx.callbackQuery.message) {
+      await ctx.editMessageText(text, { parse_mode: "HTML", ...keyboard });
+    } else {
+      await safeReply(ctx, text, keyboard);
+    }
+  } catch {
+    await safeReply(ctx, `⚠️ Could not load strategy settings.\n\n${OFFLINE_MESSAGE}`, mainMenu());
+  }
+}
+
+async function refreshConfigScreen(ctx: Context) {
+  const userId = ctx.from?.id;
+  if (!userId) return;
+
+  const payload = buildRulePayload(userId);
+  if (!payload) {
+    await ctx.answerCbQuery("Session expired");
+    return;
+  }
+
+  const text = formatConfigScreen(payload.type, payload.overrides);
+  const keyboard = configKeyboard(payload.type);
+  await ctx.editMessageText(text, { parse_mode: "HTML", ...keyboard });
+}
+
+async function activateConfiguredRule(ctx: Context) {
+  const userId = ctx.from?.id;
+  if (!userId) return;
+
+  const payload = buildRulePayload(userId);
+  if (!payload) {
+    await safeReply(ctx, `⚠️ Session expired. Pick a strategy again.`, ruleMenu());
+    return;
+  }
 
   try {
     const rule = await api<Rule>("/rules", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ type }),
+      body: JSON.stringify({ type: payload.type, ...payload.overrides }),
     });
 
+    clearSession(userId);
     await safeReply(ctx, formatRuleSummary(rule), mainMenu());
   } catch {
     await safeReply(ctx, `⚠️ <b>Could not add rule</b>\n\n${OFFLINE_MESSAGE}`, mainMenu());
   }
+}
+
+bot.action(/^rule_(weekly_rebalance|dip_buy|take_profit)$/, async (ctx) => {
+  const type = ctx.match[1] as StrategyType;
+  await ctx.answerCbQuery("Customize settings…");
+  await openStrategyConfig(ctx, type);
+});
+
+bot.action(/^(cw|cd|ct):(.+)$/, async (ctx) => {
+  const parsed = parseConfigCallback(ctx.match[0]);
+  if (!parsed) return;
+
+  const userId = ctx.from?.id;
+  if (!userId) return;
+
+  if (parsed.action === "go") {
+    await ctx.answerCbQuery("Activating…");
+    await activateConfiguredRule(ctx);
+    return;
+  }
+
+  const result = applyConfigAction(userId, parsed.action);
+  if (!result.changed) {
+    await ctx.answerCbQuery(result.message ?? "No change");
+    return;
+  }
+
+  await ctx.answerCbQuery();
+  await refreshConfigScreen(ctx);
 });
 
 bot.command("rules", async (ctx) => {
