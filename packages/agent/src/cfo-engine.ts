@@ -106,6 +106,14 @@ async function evaluateRule(rule: CFOReule, balances: Awaited<ReturnType<typeof 
   return null;
 }
 
+function resolveOwnerAddress(): string {
+  const mantle = getMantleAddress();
+  if (config.byrealWallet && /^0x[a-fA-F0-9]{40}$/.test(config.byrealWallet)) {
+    return config.byrealWallet;
+  }
+  return mantle ?? "0x0000000000000000000000000000000000000000";
+}
+
 function recordMantleTx(hash: string | null, type: string, label: string) {
   if (!hash) return;
   saveOnChainTx({
@@ -128,11 +136,15 @@ export async function runEvaluationCycle(): Promise<AgentDecision[]> {
     const decision = await evaluateRule(rule, balances);
     if (!decision) continue;
 
-    const owner = config.byrealWallet ?? getMantleAddress() ?? "0x0000000000000000000000000000000000000000";
-    const mantleTx = await logDecisionOnChain(owner, decision);
-    if (mantleTx) {
-      decision.mantleTxHash = mantleTx;
-      recordMantleTx(mantleTx, "decision", formatTxLabel(`logDecision: ${decision.action}`));
+    const owner = resolveOwnerAddress();
+    try {
+      const mantleTx = await logDecisionOnChain(owner, decision);
+      if (mantleTx) {
+        decision.mantleTxHash = mantleTx;
+        recordMantleTx(mantleTx, "decision", formatTxLabel(`logDecision: ${decision.action}`));
+      }
+    } catch (error) {
+      console.error("Mantle logDecision failed (decision still saved):", error);
     }
 
     saveDecision(decision);

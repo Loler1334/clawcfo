@@ -10,7 +10,9 @@ export const config = {
   host: process.env.AGENT_API_HOST ?? "0.0.0.0",
   allowedOrigins: process.env.ALLOWED_ORIGINS?.split(",").map((s) => s.trim()) ?? ["*"],
   simulationMode: process.env.SIMULATION_MODE !== "false",
-  byrealWallet: process.env.BYREAL_WALLET_ADDRESS,
+  byrealWallet: /^0x[a-fA-F0-9]{40}$/.test(process.env.BYREAL_WALLET_ADDRESS ?? "")
+    ? process.env.BYREAL_WALLET_ADDRESS
+    : undefined,
   byrealCliPath: process.env.BYREAL_CLI_PATH ?? "byreal-cli",
   mantleRpc: process.env.MANTLE_RPC_URL ?? "https://rpc.sepolia.mantle.xyz",
   mantlePrivateKey: process.env.AGENT_PRIVATE_KEY,
