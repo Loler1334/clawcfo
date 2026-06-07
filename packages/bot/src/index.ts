@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
-import { Markup, Telegraf } from "telegraf";
+import { Markup, Telegraf, type Context } from "telegraf";
 import {
   formatDecision,
   formatRuleListItem,
@@ -17,6 +17,11 @@ dotenv.config({ path: path.join(__dirname, "../../../.env") });
 const token = process.env.TELEGRAM_BOT_TOKEN;
 const apiBase =
   process.env.AGENT_API_URL ?? `http://127.0.0.1:${process.env.AGENT_API_PORT ?? 3847}`;
+const BOT_USERNAME = process.env.TELEGRAM_BOT_USERNAME ?? "my_mantle_cfo_bot";
+const OFFLINE_MESSAGE =
+  `⚠️ <b>Agent is offline</b>\n\n` +
+  `The ClawCFO agent API is not reachable right now. Try again in a few minutes, or use the web dashboard:\n` +
+  `https://clawcfo-web.vercel.app`;
 
 if (!token) {
   console.error("TELEGRAM_BOT_TOKEN is required. Get one from @BotFather on Telegram.");
@@ -52,7 +57,7 @@ async function api<T>(path: string, init?: RequestInit): Promise<T> {
   return res.json() as Promise<T>;
 }
 
-async function safeReply(ctx: { reply: (...args: unknown[]) => Promise<unknown> }, text: string, extra?: object) {
+async function safeReply(ctx: Context, text: string, extra?: object) {
   try {
     await ctx.reply(text, { parse_mode: "HTML", ...extra });
   } catch (error) {
@@ -99,7 +104,7 @@ bot.action("menu_status", async (ctx) => {
   await handleStatus(ctx);
 });
 
-async function handleStatus(ctx: { reply: (...args: unknown[]) => Promise<unknown> }) {
+async function handleStatus(ctx: Context) {
   try {
     const status = await api<{
       simulationMode: boolean;
@@ -130,11 +135,7 @@ async function handleStatus(ctx: { reply: (...args: unknown[]) => Promise<unknow
       mainMenu()
     );
   } catch {
-    await safeReply(
-      ctx,
-      `⚠️ <b>Agent is offline</b>\n\nStart the agent first:\n<code>npm run dev:agent</code>`,
-      mainMenu()
-    );
+    await safeReply(ctx, OFFLINE_MESSAGE, mainMenu());
   }
 }
 
@@ -142,7 +143,7 @@ bot.command("templates", async (ctx) => {
   await handleTemplates(ctx);
 });
 
-async function handleTemplates(ctx: { reply: (...args: unknown[]) => Promise<unknown> }) {
+async function handleTemplates(ctx: Context) {
   try {
     const templates = await api<Record<string, { name: string; description: string; example: string }>>("/templates");
     const lines = Object.values(templates).map(
@@ -156,7 +157,7 @@ async function handleTemplates(ctx: { reply: (...args: unknown[]) => Promise<unk
       mainMenu()
     );
   } catch {
-    await safeReply(ctx, `⚠️ Could not load templates. Is the agent running?`, mainMenu());
+    await safeReply(ctx, `⚠️ Could not load templates.\n\n${OFFLINE_MESSAGE}`, mainMenu());
   }
 }
 
@@ -169,7 +170,7 @@ bot.action("menu_addrule", async (ctx) => {
   await handleAddRule(ctx);
 });
 
-async function handleAddRule(ctx: { reply: (...args: unknown[]) => Promise<unknown> }) {
+async function handleAddRule(ctx: Context) {
   await safeReply(
     ctx,
     `➕ <b>Add a Rule</b>\n\n` +
@@ -194,11 +195,7 @@ bot.action(/^rule_(.+)$/, async (ctx) => {
 
     await safeReply(ctx, formatRuleSummary(rule), mainMenu());
   } catch {
-    await safeReply(
-      ctx,
-      `⚠️ <b>Could not add rule</b>\n\nMake sure the agent is running:\n<code>npm run dev:agent</code>`,
-      mainMenu()
-    );
+    await safeReply(ctx, `⚠️ <b>Could not add rule</b>\n\n${OFFLINE_MESSAGE}`, mainMenu());
   }
 });
 
@@ -211,7 +208,7 @@ bot.action("menu_rules", async (ctx) => {
   await handleRules(ctx);
 });
 
-async function handleRules(ctx: { reply: (...args: unknown[]) => Promise<unknown> }) {
+async function handleRules(ctx: Context) {
   try {
     const rules = await api<Rule[]>("/rules");
     if (!rules.length) {
@@ -230,7 +227,7 @@ async function handleRules(ctx: { reply: (...args: unknown[]) => Promise<unknown
       mainMenu()
     );
   } catch {
-    await safeReply(ctx, `⚠️ Could not load rules. Is the agent running?`, mainMenu());
+    await safeReply(ctx, `⚠️ Could not load rules.\n\n${OFFLINE_MESSAGE}`, mainMenu());
   }
 }
 
@@ -243,7 +240,7 @@ bot.action("menu_run", async (ctx) => {
   await handleRun(ctx);
 });
 
-async function handleRun(ctx: { reply: (...args: unknown[]) => Promise<unknown> }) {
+async function handleRun(ctx: Context) {
   await safeReply(ctx, `⏳ <b>Running agent…</b>\n\nChecking portfolio against your rules. This may take ~15 seconds (on-chain logging).`);
 
   try {
@@ -268,11 +265,7 @@ async function handleRun(ctx: { reply: (...args: unknown[]) => Promise<unknown> 
 
     await safeReply(ctx, `<i>All decisions logged on Mantle. View /history for the full log.</i>`, mainMenu());
   } catch {
-    await safeReply(
-      ctx,
-      `⚠️ <b>Agent unavailable</b>\n\nStart the agent first:\n<code>npm run dev:agent</code>`,
-      mainMenu()
-    );
+    await safeReply(ctx, OFFLINE_MESSAGE, mainMenu());
   }
 }
 
@@ -285,7 +278,7 @@ bot.action("menu_history", async (ctx) => {
   await handleHistory(ctx);
 });
 
-async function handleHistory(ctx: { reply: (...args: unknown[]) => Promise<unknown> }) {
+async function handleHistory(ctx: Context) {
   try {
     const decisions = await api<Array<Parameters<typeof formatDecision>[0]>>("/decisions");
 
@@ -306,7 +299,7 @@ async function handleHistory(ctx: { reply: (...args: unknown[]) => Promise<unkno
 
     await safeReply(ctx, `<i>Every decision is permanently recorded on Mantle blockchain.</i>`, mainMenu());
   } catch {
-    await safeReply(ctx, `⚠️ Could not load history. Is the agent running?`, mainMenu());
+    await safeReply(ctx, `⚠️ Could not load history.\n\n${OFFLINE_MESSAGE}`, mainMenu());
   }
 }
 
@@ -316,7 +309,7 @@ bot.catch((err, ctx) => {
 });
 
 bot.launch();
-console.log("Telegram bot started (English, user-friendly mode)");
+console.log(`Telegram bot @${BOT_USERNAME} started`);
 
 process.once("SIGINT", () => bot.stop("SIGINT"));
 process.once("SIGTERM", () => bot.stop("SIGTERM"));

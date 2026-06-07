@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { GettingStarted } from "../components/GettingStarted";
+import { StrategyCard } from "../components/StrategyCard";
 import { WalletButton } from "../components/WalletButton";
+import { formatTxLabel, shortenHash } from "../lib/tx-labels";
 
 const API = process.env.NEXT_PUBLIC_AGENT_API ?? "http://127.0.0.1:3847";
 const EXPLORER = "https://sepolia.mantlescan.xyz/address";
@@ -20,6 +22,7 @@ interface Template {
   name: string;
   description: string;
   example: string;
+  defaults: Record<string, string | number>;
 }
 
 interface Decision {
@@ -103,7 +106,7 @@ export default function Home() {
     });
   }, [refresh]);
 
-  async function addRule(type: string) {
+  async function addRule(type: string, config: Record<string, string | number> = {}) {
     setLoading(true);
     setMessage("");
     setError(false);
@@ -111,7 +114,7 @@ export default function Home() {
       await fetch(`${API}/rules`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type }),
+        body: JSON.stringify({ type, ...config }),
       });
       setMessage(`Strategy "${RULE_ICONS[type] ? templates[type]?.name : type}" activated successfully.`);
       await refresh();
@@ -310,8 +313,8 @@ export default function Home() {
             {proof?.transactions?.map((tx) => (
               <div key={tx.hash} className="proof-tx-item">
                 <div>
-                  <div className="proof-tx-label">{tx.label}</div>
-                  <div className="proof-tx-hash">{tx.hash}</div>
+                  <div className="proof-tx-label">{formatTxLabel(tx.label)}</div>
+                  <div className="proof-tx-hash">{shortenHash(tx.hash)}</div>
                   <div className="proof-tx-time">{formatTime(tx.timestamp)}</div>
                 </div>
                 <a
@@ -343,20 +346,16 @@ export default function Home() {
           {Object.entries(templates).map(([key, t]) => {
             const meta = RULE_ICONS[key] ?? { icon: "⚡", color: "green" };
             return (
-              <div key={key} className="rule-card">
-                <div className={`rule-icon ${meta.color}`}>{meta.icon}</div>
-                <h3>{t.name}</h3>
-                <p>{t.description}</p>
-                <span className="rule-example">e.g. {t.example}</span>
-                <button
-                  className="btn btn-primary btn-sm"
-                  onClick={() => addRule(key)}
-                  disabled={loading || !online}
-                  style={{ alignSelf: "flex-start" }}
-                >
-                  Activate Strategy
-                </button>
-              </div>
+              <StrategyCard
+                key={key}
+                strategyKey={key as "weekly_rebalance" | "dip_buy" | "take_profit"}
+                template={t}
+                icon={meta.icon}
+                color={meta.color}
+                loading={loading}
+                online={online}
+                onActivate={addRule}
+              />
             );
           })}
           {!Object.keys(templates).length && (

@@ -639,8 +639,8 @@ button {
 .getting-started-step {
   display: flex;
   gap: 0.85rem;
-  align-items: flex-start;
-  padding: 0.85rem 1rem;
+  align-items: center;
+  padding: 0.75rem 1rem;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -660,16 +660,7 @@ button {
 }
 
 .getting-started-step strong {
-  display: block;
-  margin-bottom: 0.25rem;
   font-size: 0.92rem;
-}
-
-.getting-started-step p {
-  color: var(--text-secondary);
-  font-size: 0.85rem;
-  line-height: 1.55;
-  margin: 0;
 }
 
 .getting-started-footer {
@@ -677,6 +668,92 @@ button {
   font-size: 0.82rem;
   line-height: 1.5;
   margin: 0;
+}
+
+.telegram-link {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.telegram-link:hover {
+  text-decoration: underline;
+}
+
+/* ── Strategy config ── */
+.rule-config-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.rule-config-toggle:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.rule-config-chevron {
+  font-size: 0.7rem;
+  opacity: 0.7;
+}
+
+.rule-config {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  padding: 0.85rem;
+  border-radius: 10px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+}
+
+.rule-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.rule-field-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.rule-field-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.rule-field-input {
+  flex: 1;
+  padding: 0.5rem 0.65rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.85rem;
+  font-family: inherit;
+}
+
+.rule-field-input:focus {
+  outline: none;
+  border-color: rgba(62, 224, 160, 0.4);
+}
+
+.rule-field-suffix {
+  font-size: 0.78rem;
+  color: var(--text-tertiary);
+  white-space: nowrap;
 }
 
 /* ── On-chain proof ── */

@@ -9,6 +9,7 @@ import {
 } from "./mantle-logger.js";
 import { getDecisions, getRules, saveDecision, saveOnChainTx } from "./storage.js";
 import type { AgentDecision, AgentStatus, CFOReule } from "./types.js";
+import { formatTxLabel } from "./tx-labels.js";
 
 // Simulated 7-day price history for demo (dip_buy / take_profit)
 const priceHistory: Record<string, number[]> = {
@@ -117,7 +118,7 @@ function recordMantleTx(hash: string | null, type: string, label: string) {
 
 export async function runEvaluationCycle(): Promise<AgentDecision[]> {
   const triggerTx = await triggerOnChainEvaluation();
-  recordMantleTx(triggerTx, "trigger", "triggerAgentEvaluation");
+  recordMantleTx(triggerTx, "trigger", formatTxLabel("triggerAgentEvaluation"));
 
   const rules = getRules().filter((r) => r.active);
   const balances = await getWalletBalances();
@@ -131,7 +132,7 @@ export async function runEvaluationCycle(): Promise<AgentDecision[]> {
     const mantleTx = await logDecisionOnChain(owner, decision);
     if (mantleTx) {
       decision.mantleTxHash = mantleTx;
-      recordMantleTx(mantleTx, "decision", `logDecision: ${decision.action}`);
+      recordMantleTx(mantleTx, "decision", formatTxLabel(`logDecision: ${decision.action}`));
     }
 
     saveDecision(decision);
@@ -145,7 +146,7 @@ export async function addRule(rule: CFOReule): Promise<CFOReule> {
   const { saveRule } = await import("./storage.js");
   saveRule(rule);
   const tx = await createRuleOnChain(rule.type, JSON.stringify(rule));
-  recordMantleTx(tx, "rule", `createRule: ${rule.type}`);
+  recordMantleTx(tx, "rule", formatTxLabel(`createRule: ${rule.type}`));
   return rule;
 }
 

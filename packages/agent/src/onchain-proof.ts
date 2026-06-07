@@ -1,5 +1,6 @@
 import { config } from "./config.js";
 import { getOnChainTxs } from "./storage.js";
+import { formatTxLabel } from "./tx-labels.js";
 
 const EXPLORER_TX = "https://sepolia.mantlescan.xyz/tx";
 const EXPLORER_CONTRACT = "https://sepolia.mantlescan.xyz/address";
@@ -23,8 +24,8 @@ export interface OnChainProof {
 }
 
 function labelForMethod(input: string): string {
-  if (input.startsWith("0x")) return "Contract interaction";
-  return "Agent transaction";
+  if (input.startsWith("0x")) return "On-chain action ✅";
+  return formatTxLabel(input);
 }
 
 async function fetchFromExplorer(contractAddress: string, limit = 6): Promise<OnChainProofTx[]> {
@@ -43,7 +44,7 @@ async function fetchFromExplorer(contractAddress: string, limit = 6): Promise<On
   return data.result.map((tx) => ({
     hash: tx.hash,
     type: "explorer",
-    label: tx.functionName?.split("(")[0] || labelForMethod(tx.methodId ?? ""),
+    label: formatTxLabel(tx.functionName?.split("(")[0] || labelForMethod(tx.methodId ?? "")),
     timestamp: new Date(Number(tx.timeStamp) * 1000).toISOString(),
     explorerUrl: `${EXPLORER_TX}/${tx.hash}`,
   }));
@@ -56,7 +57,7 @@ export async function getOnChainProof(agentAddress?: string): Promise<OnChainPro
   let transactions: OnChainProofTx[] = local.map((tx) => ({
     hash: tx.hash,
     type: tx.type,
-    label: tx.label,
+    label: formatTxLabel(tx.label),
     timestamp: tx.timestamp,
     explorerUrl: `${EXPLORER_TX}/${tx.hash}`,
   }));
