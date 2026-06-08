@@ -51,7 +51,16 @@ const mainMenu = () =>
       Markup.button.callback("📋 My Rules", "menu_rules"),
       Markup.button.callback("📜 History", "menu_history"),
     ],
+    [Markup.button.callback("🔄 Reset Strategies", "menu_reset")],
     [Markup.button.callback("📊 Status", "menu_status"), Markup.button.callback("❓ Help", "menu_help")],
+  ]);
+
+const resetConfirmMenu = () =>
+  Markup.inlineKeyboard([
+    [
+      Markup.button.callback("✅ Yes, clear all", "reset_confirm"),
+      Markup.button.callback("✖ Cancel", "menu_start"),
+    ],
   ]);
 
 const ruleMenu = () =>
@@ -85,6 +94,7 @@ bot.telegram.setMyCommands([
   { command: "rules", description: "List your rules" },
   { command: "history", description: "Recent agent decisions" },
   { command: "status", description: "Agent & contract status" },
+  { command: "reset", description: "Clear all active strategies" },
   { command: "templates", description: "Explain rule templates" },
 ]);
 
@@ -316,6 +326,42 @@ async function handleRules(ctx: Context) {
     );
   } catch {
     await safeReply(ctx, `⚠️ Could not load rules.\n\n${OFFLINE_MESSAGE}`, mainMenu());
+  }
+}
+
+bot.command("reset", async (ctx) => {
+  await handleResetPrompt(ctx);
+});
+
+bot.action("menu_reset", async (ctx) => {
+  await ctx.answerCbQuery();
+  await handleResetPrompt(ctx);
+});
+
+bot.action("reset_confirm", async (ctx) => {
+  await ctx.answerCbQuery("Clearing…");
+  await handleResetConfirm(ctx);
+});
+
+async function handleResetPrompt(ctx: Context) {
+  await safeReply(
+    ctx,
+    `🔄 <b>Reset Strategies</b>\n\n` +
+      `Remove all active strategies? You can add new ones anytime with "➕ Add Rule".`,
+    resetConfirmMenu()
+  );
+}
+
+async function handleResetConfirm(ctx: Context) {
+  try {
+    await api<{ ok: boolean; cleared: boolean }>("/rules", { method: "DELETE" });
+    await safeReply(
+      ctx,
+      `✅ <b>All strategies cleared.</b>\n\nPick new ones with "➕ Add Rule".`,
+      mainMenu()
+    );
+  } catch {
+    await safeReply(ctx, `⚠️ <b>Could not reset strategies</b>\n\n${OFFLINE_MESSAGE}`, mainMenu());
   }
 }
 

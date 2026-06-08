@@ -130,13 +130,15 @@ export const HELP_MESSAGE =
   `<b>Step 3 — Review results</b>\n` +
   `/history — last 5 decisions\n` +
   `/status — agent mode, active rules, Mantle contract\n` +
-  `/rules — list all your rules\n\n` +
+  `/rules — list all your rules\n` +
+  `/reset — clear all active strategies\n\n` +
   `<b>Commands</b>\n` +
   `/start — welcome & quick start\n` +
   `/help — this guide\n` +
   `/addrule — add a new rule\n` +
   `/run — run agent now\n` +
   `/rules — your rules\n` +
+  `/reset — clear all strategies\n` +
   `/history — recent decisions\n` +
   `/status — agent status\n` +
   `/templates — rule templates explained\n\n` +
