@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import { GettingStarted } from "../components/GettingStarted";
+import { HeroScene } from "../components/HeroScene";
 import { StrategyCard } from "../components/StrategyCard";
 import { WalletButton } from "../components/WalletButton";
 import { formatTxLabel, shortenHash } from "../lib/tx-labels";
@@ -186,29 +187,33 @@ export default function Home() {
 
       {/* ── Hero ── */}
       <section className="hero">
-        <div className="hero-eyebrow">
-          <span className="hero-eyebrow-dot" />
-          Autonomous on-chain wealth management
-        </div>
-        <h1>
-          Your portfolio,
-          <br />
-          managed while you sleep
-        </h1>
-        <p className="hero-sub">
-          Set rules once. ClawCFO monitors your assets, rebalances, buys dips, and takes profit -
-          with every decision permanently verified on-chain.
-        </p>
-        <div className="hero-cta">
-          <a href="#dashboard" className="btn btn-primary">
-            Get Started
-          </a>
-          <a href="#how-it-works" className="btn btn-ghost">
-            See How it Works
-          </a>
+        <div className="hero-layout">
+          <div className="hero-content">
+            <div className="hero-eyebrow">
+              <span className="hero-eyebrow-dot" />
+              Holographic DeFi · Mantle Network
+            </div>
+            <h1 className="hero-title">
+              <span className="hero-line">Your portfolio,</span>
+              <span className="hero-line hero-line-accent">managed on-chain</span>
+            </h1>
+            <p className="hero-sub">
+              Set rules once. ClawCFO monitors your assets, rebalances, buys dips, and takes profit —
+              with every decision permanently verified on Mantle.
+            </p>
+            <div className="hero-cta">
+              <a href="#dashboard" className="btn btn-primary">
+                Get Started
+              </a>
+              <a href="#how-it-works" className="btn btn-ghost">
+                See How it Works
+              </a>
+            </div>
+          </div>
+          <HeroScene />
         </div>
 
-        <div className="hero-visual" id="dashboard">
+        <div className="hero-visual glass-panel" id="dashboard">
           <div className="stats-grid">
             <div className="stat-card">
               <div className="stat-label">Agent Status</div>
