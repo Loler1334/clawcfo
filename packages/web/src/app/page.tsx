@@ -40,6 +40,20 @@ interface Decision {
   mantleTxHash?: string;
 }
 
+interface ActiveRule {
+  id: string;
+  type: string;
+  active: boolean;
+  sourceToken?: string;
+  targetToken?: string;
+  percent?: number;
+  token?: string;
+  dropPercent?: number;
+  buyAmountUsd?: number;
+  gainPercent?: number;
+  sellPercent?: number;
+}
+
 interface OnChainProof {
   network: string;
   chainId: number;
@@ -75,9 +89,27 @@ function formatTime(ts: string) {
   });
 }
 
+function formatRuleLabel(rule: ActiveRule): string {
+  if (rule.type === "weekly_rebalance") {
+    return `Weekly Rebalance: ${rule.percent}% ${rule.sourceToken} → ${rule.targetToken}`;
+  }
+  if (rule.type === "dip_buy") {
+    return `Dip Buy: $${rule.buyAmountUsd} ${rule.token} on −${rule.dropPercent}% drop`;
+  }
+  if (rule.type === "take_profit") {
+    return `Take Profit: sell ${rule.sellPercent}% ${rule.token} at +${rule.gainPercent}%`;
+  }
+  return rule.type.replace(/_/g, " ");
+}
+
+function ruleIcon(type: string): string {
+  return RULE_ICONS[type]?.icon ?? "⚡";
+}
+
 export default function Home() {
   const [status, setStatus] = useState<Status | null>(null);
   const [templates, setTemplates] = useState<Record<string, Template>>({});
+  const [rules, setRules] = useState<ActiveRule[]>([]);
   const [decisions, setDecisions] = useState<Decision[]>([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -86,14 +118,16 @@ export default function Home() {
   const [proof, setProof] = useState<OnChainProof | null>(null);
 
   const refresh = useCallback(async () => {
-    const [s, t, d, p] = await Promise.all([
+    const [s, t, r, d, p] = await Promise.all([
       fetch(`${API}/status`).then((r) => r.json()),
       fetch(`${API}/templates`).then((r) => r.json()),
+      fetch(`${API}/rules`).then((r) => r.json()),
       fetch(`${API}/decisions`).then((r) => r.json()),
       fetch(`${API}/onchain-proof`).then((r) => r.json()),
     ]);
     setStatus(s);
     setTemplates(t);
+    setRules(r);
     setDecisions(d);
     setProof(p);
     setOnline(true);
@@ -122,6 +156,26 @@ export default function Home() {
       await refresh();
     } catch {
       setMessage("Failed to add strategy. Please try again.");
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function removeRule(id: string, label: string) {
+    if (!confirm(`Remove "${label}"?`)) {
+      return;
+    }
+    setLoading(true);
+    setMessage("");
+    setError(false);
+    try {
+      const res = await fetch(`${API}/rules/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("delete failed");
+      setMessage(`Removed "${label}".`);
+      await refresh();
+    } catch {
+      setMessage("Failed to remove strategy. Is the agent online?");
       setError(true);
     } finally {
       setLoading(false);
@@ -301,8 +355,12 @@ export default function Home() {
               <button className="btn btn-ghost btn-sm" onClick={handleRefresh} disabled={loading || !online}>
                 Refresh
               </button>
-              <button className="btn btn-ghost btn-sm" onClick={resetStrategies} disabled={loading || !online}>
-                Reset Strategies
+              <button
+                className="btn btn-ghost btn-sm"
+                onClick={resetStrategies}
+                disabled={loading || !online || rules.length === 0}
+              >
+                Clear All
               </button>
               <button className="btn btn-primary btn-sm" onClick={runAgent} disabled={loading || !online}>
                 {loading ? "Running…" : "Run Agent Now"}
@@ -311,6 +369,36 @@ export default function Home() {
           </div>
           <div className="panel-body">
             {message && <div className={`toast ${error ? "error" : ""}`}>{message}</div>}
+            {rules.length > 0 && (
+              <div className="active-rules">
+                <div className="active-rules-header">
+                  <h4>Active Strategies ({rules.length})</h4>
+                  <span className="active-rules-hint">Remove one or clear all</span>
+                </div>
+                <div className="active-rules-list">
+                  {rules.map((rule) => {
+                    const label = formatRuleLabel(rule);
+                    return (
+                      <div key={rule.id} className="active-rule-item">
+                        <div className="active-rule-info">
+                          <span className="active-rule-icon">{ruleIcon(rule.type)}</span>
+                          <span className="active-rule-label">{label}</span>
+                          {!rule.active && <span className="active-rule-paused">Paused</span>}
+                        </div>
+                        <button
+                          type="button"
+                          className="btn btn-ghost btn-sm active-rule-remove"
+                          onClick={() => removeRule(rule.id, label)}
+                          disabled={loading || !online}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
             <GettingStarted offline={!online} />
           </div>
         </div>

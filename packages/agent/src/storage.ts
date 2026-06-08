@@ -49,6 +49,13 @@ export function toggleRule(id: string, active: boolean) {
   writeJson(rulesFile, rules);
 }
 
+export function deleteRule(id: string) {
+  const rules = getRules();
+  const next = rules.filter((r) => r.id !== id);
+  if (next.length === rules.length) throw new Error(`Rule ${id} not found`);
+  writeJson(rulesFile, next);
+}
+
 export function clearRules() {
   writeJson(rulesFile, []);
 }

@@ -563,6 +563,80 @@ button {
   padding: 1.5rem;
 }
 
+.active-rules {
+  margin-bottom: 1.5rem;
+  padding: 1rem 1.1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.active-rules-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.active-rules-header h4 {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.active-rules-hint {
+  font-size: 0.78rem;
+  color: var(--text-tertiary);
+}
+
+.active-rules-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.active-rule-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.7rem 0.85rem;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.active-rule-info {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 0;
+}
+
+.active-rule-icon {
+  flex-shrink: 0;
+}
+
+.active-rule-label {
+  font-size: 0.86rem;
+  color: var(--text-secondary);
+  line-height: 1.35;
+}
+
+.active-rule-paused {
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.1rem 0.45rem;
+}
+
+.active-rule-remove {
+  flex-shrink: 0;
+  color: var(--warning);
+}
+
 .toast {
   padding: 0.85rem 1.25rem;
   border-radius: 10px;

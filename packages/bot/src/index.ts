@@ -4,6 +4,7 @@ import { fileURLToPath } from "url";
 import { Markup, Telegraf, type Context } from "telegraf";
 import {
   formatDecision,
+  formatRuleButtonLabel,
   formatRuleListItem,
   formatRuleSummary,
   HELP_MESSAGE,
@@ -51,17 +52,26 @@ const mainMenu = () =>
       Markup.button.callback("📋 My Rules", "menu_rules"),
       Markup.button.callback("📜 History", "menu_history"),
     ],
-    [Markup.button.callback("🔄 Reset Strategies", "menu_reset")],
+    [Markup.button.callback("🗑 Remove Strategy", "menu_remove")],
     [Markup.button.callback("📊 Status", "menu_status"), Markup.button.callback("❓ Help", "menu_help")],
   ]);
 
-const resetConfirmMenu = () =>
+const clearAllConfirmMenu = () =>
   Markup.inlineKeyboard([
     [
       Markup.button.callback("✅ Yes, clear all", "reset_confirm"),
-      Markup.button.callback("✖ Cancel", "menu_start"),
+      Markup.button.callback("✖ Cancel", "menu_remove"),
     ],
   ]);
+
+function removeOneConfirmMenu(ruleId: string) {
+  return Markup.inlineKeyboard([
+    [
+      Markup.button.callback("✅ Yes, remove", `remove_one:${ruleId}`),
+      Markup.button.callback("✖ Cancel", "menu_remove"),
+    ],
+  ]);
+}
 
 const ruleMenu = () =>
   Markup.inlineKeyboard([
@@ -94,7 +104,8 @@ bot.telegram.setMyCommands([
   { command: "rules", description: "List your rules" },
   { command: "history", description: "Recent agent decisions" },
   { command: "status", description: "Agent & contract status" },
-  { command: "reset", description: "Clear all active strategies" },
+  { command: "remove", description: "Remove a strategy" },
+  { command: "reset", description: "Clear all strategies" },
   { command: "templates", description: "Explain rule templates" },
 ]);
 
@@ -329,30 +340,108 @@ async function handleRules(ctx: Context) {
   }
 }
 
-bot.command("reset", async (ctx) => {
-  await handleResetPrompt(ctx);
+bot.command("remove", async (ctx) => {
+  await handleRemoveMenu(ctx);
 });
 
-bot.action("menu_reset", async (ctx) => {
+bot.command("reset", async (ctx) => {
+  await handleClearAllPrompt(ctx);
+});
+
+bot.action("menu_remove", async (ctx) => {
   await ctx.answerCbQuery();
-  await handleResetPrompt(ctx);
+  await handleRemoveMenu(ctx);
+});
+
+bot.action(/^remove_pick:(.+)$/, async (ctx) => {
+  const ruleId = ctx.match[1];
+  await ctx.answerCbQuery();
+  await handleRemoveOnePrompt(ctx, ruleId);
+});
+
+bot.action(/^remove_one:(.+)$/, async (ctx) => {
+  const ruleId = ctx.match[1];
+  await ctx.answerCbQuery("Removing…");
+  await handleRemoveOneConfirm(ctx, ruleId);
 });
 
 bot.action("reset_confirm", async (ctx) => {
   await ctx.answerCbQuery("Clearing…");
-  await handleResetConfirm(ctx);
+  await handleClearAllConfirm(ctx);
 });
 
-async function handleResetPrompt(ctx: Context) {
+async function handleRemoveMenu(ctx: Context) {
+  try {
+    const rules = await api<Rule[]>("/rules");
+    if (!rules.length) {
+      await safeReply(
+        ctx,
+        `🗑 <b>No strategies yet</b>\n\nAdd one with "➕ Add Rule" first.`,
+        mainMenu()
+      );
+      return;
+    }
+
+    const rows = rules.map((rule) => [
+      Markup.button.callback(formatRuleButtonLabel(rule), `remove_pick:${rule.id}`),
+    ]);
+    rows.push([Markup.button.callback("🗑 Clear all strategies", "menu_clear_all")]);
+    rows.push([Markup.button.callback("« Back to menu", "menu_start")]);
+
+    await safeReply(
+      ctx,
+      `🗑 <b>Remove Strategy</b>\n\nPick which strategy to remove:`,
+      Markup.inlineKeyboard(rows)
+    );
+  } catch {
+    await safeReply(ctx, `⚠️ <b>Could not load strategies</b>\n\n${OFFLINE_MESSAGE}`, mainMenu());
+  }
+}
+
+async function handleRemoveOnePrompt(ctx: Context, ruleId: string) {
+  try {
+    const rules = await api<Rule[]>("/rules");
+    const rule = rules.find((r) => r.id === ruleId);
+    if (!rule) {
+      await safeReply(ctx, `⚠️ Strategy not found. It may have been removed already.`, mainMenu());
+      return;
+    }
+
+    const index = rules.findIndex((r) => r.id === ruleId) + 1;
+    await safeReply(
+      ctx,
+      `🗑 <b>Remove this strategy?</b>\n\n${formatRuleListItem(rule, index)}`,
+      removeOneConfirmMenu(ruleId)
+    );
+  } catch {
+    await safeReply(ctx, OFFLINE_MESSAGE, mainMenu());
+  }
+}
+
+async function handleRemoveOneConfirm(ctx: Context, ruleId: string) {
+  try {
+    await api<{ ok: boolean; deleted: string }>(`/rules/${ruleId}`, { method: "DELETE" });
+    await safeReply(ctx, `✅ <b>Strategy removed.</b>`, mainMenu());
+  } catch {
+    await safeReply(ctx, `⚠️ <b>Could not remove strategy</b>\n\n${OFFLINE_MESSAGE}`, mainMenu());
+  }
+}
+
+bot.action("menu_clear_all", async (ctx) => {
+  await ctx.answerCbQuery();
+  await handleClearAllPrompt(ctx);
+});
+
+async function handleClearAllPrompt(ctx: Context) {
   await safeReply(
     ctx,
-    `🔄 <b>Reset Strategies</b>\n\n` +
-      `Remove all active strategies? You can add new ones anytime with "➕ Add Rule".`,
-    resetConfirmMenu()
+    `🗑 <b>Clear all strategies?</b>\n\n` +
+      `This removes every active strategy. You can add new ones anytime with "➕ Add Rule".`,
+    clearAllConfirmMenu()
   );
 }
 
-async function handleResetConfirm(ctx: Context) {
+async function handleClearAllConfirm(ctx: Context) {
   try {
     await api<{ ok: boolean; cleared: boolean }>("/rules", { method: "DELETE" });
     await safeReply(
@@ -361,7 +450,7 @@ async function handleResetConfirm(ctx: Context) {
       mainMenu()
     );
   } catch {
-    await safeReply(ctx, `⚠️ <b>Could not reset strategies</b>\n\n${OFFLINE_MESSAGE}`, mainMenu());
+    await safeReply(ctx, `⚠️ <b>Could not clear strategies</b>\n\n${OFFLINE_MESSAGE}`, mainMenu());
   }
 }
 

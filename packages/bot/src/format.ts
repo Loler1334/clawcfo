@@ -1,4 +1,5 @@
 type WeeklyRule = {
+  id: string;
   type: "weekly_rebalance";
   sourceToken: string;
   targetToken: string;
@@ -8,6 +9,7 @@ type WeeklyRule = {
 };
 
 type DipRule = {
+  id: string;
   type: "dip_buy";
   token: string;
   dropPercent: number;
@@ -16,6 +18,7 @@ type DipRule = {
 };
 
 type ProfitRule = {
+  id: string;
   type: "take_profit";
   token: string;
   gainPercent: number;
@@ -72,6 +75,16 @@ export function formatRuleSummary(rule: Rule): string {
     `Status: ${rule.active ? "🟢 Active" : "⏸ Paused"}\n\n` +
     `<i>Next step: tap "▶ Run Agent" to simulate a portfolio check.</i>`
   );
+}
+
+export function formatRuleButtonLabel(rule: Rule): string {
+  if (rule.type === "weekly_rebalance") {
+    return `📅 ${rule.percent}% ${rule.sourceToken}→${rule.targetToken}`;
+  }
+  if (rule.type === "dip_buy") {
+    return `📉 Dip ${rule.token} −${rule.dropPercent}%`;
+  }
+  return `📈 Profit ${rule.token} +${rule.gainPercent}%`;
 }
 
 export function formatRuleListItem(rule: Rule, index: number): string {
@@ -131,13 +144,15 @@ export const HELP_MESSAGE =
   `/history — last 5 decisions\n` +
   `/status — agent mode, active rules, Mantle contract\n` +
   `/rules — list all your rules\n` +
-  `/reset — clear all active strategies\n\n` +
+  `/remove — pick one strategy to delete\n` +
+  `/reset — clear all strategies\n\n` +
   `<b>Commands</b>\n` +
   `/start — welcome & quick start\n` +
   `/help — this guide\n` +
   `/addrule — add a new rule\n` +
   `/run — run agent now\n` +
   `/rules — your rules\n` +
+  `/remove — remove one strategy\n` +
   `/reset — clear all strategies\n` +
   `/history — recent decisions\n` +
   `/status — agent status\n` +
