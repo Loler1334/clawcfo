@@ -49,6 +49,10 @@ export function toggleRule(id: string, active: boolean) {
   writeJson(rulesFile, rules);
 }
 
+export function clearRules() {
+  writeJson(rulesFile, []);
+}
+
 export function getDecisions(): AgentDecision[] {
   return readJson<AgentDecision[]>(decisionsFile, []);
 }

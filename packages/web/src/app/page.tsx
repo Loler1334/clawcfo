@@ -128,6 +128,41 @@ export default function Home() {
     }
   }
 
+  async function resetStrategies() {
+    if (!confirm("Remove all active strategies? You can add new ones from the Strategies section.")) {
+      return;
+    }
+    setLoading(true);
+    setMessage("");
+    setError(false);
+    try {
+      await fetch(`${API}/rules`, { method: "DELETE" });
+      setMessage("All strategies cleared. Pick new ones below.");
+      await refresh();
+    } catch {
+      setMessage("Failed to reset strategies. Is the agent online?");
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleRefresh() {
+    setLoading(true);
+    setMessage("");
+    setError(false);
+    try {
+      await refresh();
+      setMessage("Dashboard updated.");
+    } catch {
+      setOnline(false);
+      setMessage("");
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function runAgent() {
     setLoading(true);
     setMessage("Agent is analyzing your portfolio…");
@@ -161,10 +196,10 @@ export default function Home() {
         <div className="nav-inner">
           <a href="#" className="logo" aria-label="ClawCFO home">
             <Image
-              src="/clawcfo-logo.png"
+              src="/clawcfo-logo-holo.png"
               alt="ClawCFO"
-              width={132}
-              height={132}
+              width={220}
+              height={220}
               className="logo-img"
               priority
             />
@@ -191,15 +226,15 @@ export default function Home() {
           <div className="hero-content">
             <div className="hero-eyebrow">
               <span className="hero-eyebrow-dot" />
-              Holographic DeFi · Mantle Network
+              Autonomous on-chain wealth management
             </div>
             <h1 className="hero-title">
               <span className="hero-line">Your portfolio,</span>
-              <span className="hero-line hero-line-accent">managed on-chain</span>
+              <span className="hero-line hero-line-accent">managed while you sleep</span>
             </h1>
             <p className="hero-sub">
-              Set rules once. ClawCFO monitors your assets, rebalances, buys dips, and takes profit —
-              with every decision permanently verified on Mantle.
+              Set rules once. ClawCFO monitors your assets, rebalances, buys dips, and takes profit -
+              with every decision permanently verified on-chain.
             </p>
             <div className="hero-cta">
               <a href="#dashboard" className="btn btn-primary">
@@ -263,8 +298,11 @@ export default function Home() {
           <div className="panel-header">
             <span className="panel-title">Agent Control Center</span>
             <div className="panel-actions">
-              <button className="btn btn-ghost btn-sm" onClick={() => refresh()} disabled={loading}>
+              <button className="btn btn-ghost btn-sm" onClick={handleRefresh} disabled={loading || !online}>
                 Refresh
+              </button>
+              <button className="btn btn-ghost btn-sm" onClick={resetStrategies} disabled={loading || !online}>
+                Reset Strategies
               </button>
               <button className="btn btn-primary btn-sm" onClick={runAgent} disabled={loading || !online}>
                 {loading ? "Running…" : "Run Agent Now"}

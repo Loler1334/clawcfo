@@ -14,3 +14,8 @@ deployments/
 .DS_Store
 data/
 .turbo/
+
+# Personal notes (local only, not for the public repo)
+CHECKLIST_RU.md
+SETUP_RU.md
+VIDEO_SCRIPT.md

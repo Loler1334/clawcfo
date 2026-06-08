@@ -84,17 +84,23 @@ export function StrategyCard({ strategyKey, template, icon, color, loading, onli
               <span className="rule-field-label">{field.label}</span>
               <div className="rule-field-input-wrap">
                 {field.type === "select" ? (
-                  <select
-                    className="rule-field-input"
-                    value={String(config[field.key] ?? "")}
-                    onChange={(e) => updateField(field.key, e.target.value)}
-                  >
-                    {field.options?.map((opt) => (
-                      <option key={opt} value={opt}>
-                        {opt}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="token-picker" role="listbox" aria-label={field.label}>
+                    {field.options?.map((opt) => {
+                      const selected = String(config[field.key] ?? "") === opt;
+                      return (
+                        <button
+                          key={opt}
+                          type="button"
+                          role="option"
+                          aria-selected={selected}
+                          className={`token-option${selected ? " selected" : ""}`}
+                          onClick={() => updateField(field.key, opt)}
+                        >
+                          {opt}
+                        </button>
+                      );
+                    })}
+                  </div>
                 ) : (
                   <input
                     className="rule-field-input"

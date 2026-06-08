@@ -6,7 +6,7 @@ import { getOnChainProof } from "./onchain-proof.js";
 import { getMantleAddress } from "./mantle-logger.js";
 import { config } from "./config.js";
 import { createRuleFromTemplate, RULE_TEMPLATES } from "./rule-templates.js";
-import { getDecisions, getRules, toggleRule } from "./storage.js";
+import { clearRules, getDecisions, getRules, toggleRule } from "./storage.js";
 import type { RuleType } from "./types.js";
 
 const app = express();
@@ -46,6 +46,15 @@ app.post("/rules", async (req, res) => {
     }
     const rule = await addRule(createRuleFromTemplate(type, overrides));
     res.json(rule);
+  } catch (error) {
+    res.status(500).json({ error: String(error) });
+  }
+});
+
+app.delete("/rules", (_req, res) => {
+  try {
+    clearRules();
+    res.json({ ok: true, cleared: true });
   } catch (error) {
     res.status(500).json({ error: String(error) });
   }
