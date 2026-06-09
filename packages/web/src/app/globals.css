@@ -291,13 +291,13 @@ button {
 }
 
 .hero-title {
-  font-family: var(--font-display);
+  font-family: var(--font-hero), var(--font), sans-serif;
   font-size: clamp(2.18rem, 3.45vw, 3.15rem);
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.22;
   margin-bottom: 1.5rem;
-  max-width: 9ch;
+  max-width: 11ch;
 }
 
 .hero-line {
@@ -1181,6 +1181,35 @@ button {
 
 .proof-tx-link:hover {
   background: rgba(62, 224, 160, 0.2);
+}
+
+.list-expand-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  width: 100%;
+  margin-top: 0.35rem;
+  padding: 0.65rem 1rem;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+
+.list-expand-toggle:hover {
+  color: var(--accent);
+  border-color: rgba(0, 229, 160, 0.35);
+  background: rgba(0, 229, 160, 0.04);
+}
+
+.list-expand-chevron {
+  font-size: 0.65rem;
+  opacity: 0.85;
 }
 
 /* ── Footer ── */

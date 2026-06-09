@@ -89,6 +89,12 @@ function formatTime(ts: string) {
   });
 }
 
+const LIST_PREVIEW = 3;
+
+function slicePreview<T>(items: T[], expanded: boolean): T[] {
+  return expanded ? items : items.slice(0, LIST_PREVIEW);
+}
+
 function formatRuleLabel(rule: ActiveRule): string {
   if (rule.type === "weekly_rebalance") {
     return `Weekly Rebalance: ${rule.percent}% ${rule.sourceToken} → ${rule.targetToken}`;
@@ -116,6 +122,8 @@ export default function Home() {
   const [error, setError] = useState(false);
   const [online, setOnline] = useState(true);
   const [proof, setProof] = useState<OnChainProof | null>(null);
+  const [proofExpanded, setProofExpanded] = useState(false);
+  const [activityExpanded, setActivityExpanded] = useState(false);
 
   const refresh = useCallback(async () => {
     const [s, t, r, d, p] = await Promise.all([
@@ -242,6 +250,13 @@ export default function Home() {
   const contractShort = status?.contractAddress
     ? `${status.contractAddress.slice(0, 6)}…${status.contractAddress.slice(-4)}`
     : null;
+
+  const proofTxs = proof?.transactions ?? [];
+  const visibleProofTxs = slicePreview(proofTxs, proofExpanded);
+  const hiddenProofCount = Math.max(0, proofTxs.length - LIST_PREVIEW);
+
+  const visibleDecisions = slicePreview(decisions, activityExpanded);
+  const hiddenDecisionCount = Math.max(0, decisions.length - LIST_PREVIEW);
 
   return (
     <div className="page">
@@ -448,7 +463,7 @@ export default function Home() {
                 </p>
               </div>
             )}
-            {proof?.transactions?.map((tx) => (
+            {visibleProofTxs.map((tx) => (
               <div key={tx.hash} className="proof-tx-item">
                 <div>
                   <div className="proof-tx-label">{formatTxLabel(tx.label)}</div>
@@ -465,6 +480,18 @@ export default function Home() {
                 </a>
               </div>
             ))}
+            {hiddenProofCount > 0 && (
+              <button
+                type="button"
+                className="list-expand-toggle"
+                onClick={() => setProofExpanded((v) => !v)}
+              >
+                {proofExpanded
+                  ? "Show less"
+                  : `Show ${hiddenProofCount} more transaction${hiddenProofCount > 1 ? "s" : ""}`}
+                <span className="list-expand-chevron">{proofExpanded ? "▲" : "▼"}</span>
+              </button>
+            )}
           </div>
         </div>
       </section>
@@ -615,8 +642,8 @@ export default function Home() {
               </p>
             </div>
           )}
-          {decisions.map((d, i) => (
-            <div key={i} className="activity-item">
+          {visibleDecisions.map((d, i) => (
+            <div key={`${d.timestamp}-${d.action}-${i}`} className="activity-item">
               <div className="activity-icon">{d.executed ? "✓" : "-"}</div>
               <div>
                 <div className="activity-action">
@@ -647,6 +674,18 @@ export default function Home() {
               <span className="activity-time">{formatTime(d.timestamp)}</span>
             </div>
           ))}
+          {hiddenDecisionCount > 0 && (
+            <button
+              type="button"
+              className="list-expand-toggle"
+              onClick={() => setActivityExpanded((v) => !v)}
+            >
+              {activityExpanded
+                ? "Show less"
+                : `Show ${hiddenDecisionCount} more decision${hiddenDecisionCount > 1 ? "s" : ""}`}
+              <span className="list-expand-chevron">{activityExpanded ? "▲" : "▼"}</span>
+            </button>
+          )}
         </div>
       </section>
 
