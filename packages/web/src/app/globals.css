@@ -292,11 +292,12 @@ button {
 
 .hero-title {
   font-family: var(--font-display);
-  font-size: clamp(2.6rem, 5.5vw, 4.25rem);
+  font-size: clamp(2.1rem, 3.4vw, 3.15rem);
   font-weight: 800;
-  letter-spacing: -0.04em;
-  line-height: 1.05;
+  letter-spacing: -0.03em;
+  line-height: 1.18;
   margin-bottom: 1.5rem;
+  max-width: 14ch;
 }
 
 .hero-line {
@@ -1227,6 +1228,7 @@ button {
     text-align: center;
   }
   .hero-content { text-align: center; }
+  .hero-title { margin-left: auto; margin-right: auto; }
   .hero-sub { margin-left: auto; margin-right: auto; }
   .hero-cta { justify-content: center; }
   .hero-scene { height: 260px; order: -1; }
