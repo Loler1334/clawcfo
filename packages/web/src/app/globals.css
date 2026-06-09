@@ -292,12 +292,12 @@ button {
 
 .hero-title {
   font-family: var(--font-display);
-  font-size: clamp(2.1rem, 3.4vw, 3.15rem);
+  font-size: clamp(1.45rem, 2.3vw, 2.1rem);
   font-weight: 800;
   letter-spacing: -0.03em;
-  line-height: 1.18;
+  line-height: 1.2;
   margin-bottom: 1.5rem;
-  max-width: 14ch;
+  max-width: 9ch;
 }
 
 .hero-line {
