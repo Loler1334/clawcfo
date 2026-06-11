@@ -1,4 +1,5 @@
 import dotenv from "dotenv";
+import http from "http";
 import path from "path";
 import { fileURLToPath } from "url";
 import { Markup, Telegraf, type Context } from "telegraf";
@@ -35,8 +36,8 @@ const OFFLINE_MESSAGE =
   `The ClawCFO agent API is not reachable right now. Try again in a few minutes, or use the web dashboard:\n` +
   `https://clawcfo-web.vercel.app`;
 
-if (!token) {
-  console.error("TELEGRAM_BOT_TOKEN is required. Get one from @BotFather on Telegram.");
+if (!token || token.includes("botfather") || token.includes("your_bot")) {
+  console.error("TELEGRAM_BOT_TOKEN is missing or still a placeholder. Set the real token from @BotFather.");
   process.exit(1);
 }
 
@@ -531,8 +532,42 @@ bot.catch((err, ctx) => {
   safeReply(ctx, `⚠️ Something went wrong. Try /start or /help.`).catch(console.error);
 });
 
-bot.launch();
-console.log(`Telegram bot @${BOT_USERNAME} started`);
+function startHealthServer() {
+  const port = Number(process.env.PORT);
+  if (!port) return undefined;
 
-process.once("SIGINT", () => bot.stop("SIGINT"));
-process.once("SIGTERM", () => bot.stop("SIGTERM"));
+  const server = http.createServer((req, res) => {
+    if (req.url === "/health" || req.url === "/") {
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ ok: true, service: "clawcfo-bot" }));
+      return;
+    }
+    res.writeHead(404).end();
+  });
+
+  server.listen(port, "0.0.0.0", () => {
+    console.log(`Health server listening on ${port}`);
+  });
+
+  return server;
+}
+
+async function main() {
+  const healthServer = startHealthServer();
+  await bot.launch();
+  console.log(`Telegram bot @${BOT_USERNAME} started`);
+  console.log(`Agent API: ${apiBase}`);
+
+  const shutdown = (signal: string) => {
+    bot.stop(signal);
+    healthServer?.close();
+  };
+
+  process.once("SIGINT", () => shutdown("SIGINT"));
+  process.once("SIGTERM", () => shutdown("SIGTERM"));
+}
+
+main().catch((error) => {
+  console.error("Bot failed to start:", error);
+  process.exit(1);
+});

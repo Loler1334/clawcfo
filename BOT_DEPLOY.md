@@ -28,8 +28,11 @@ The bot **must run 24/7** to answer messages on Telegram. Running it only on you
 
 **Settings → Build**:
 - Builder: **Dockerfile**
-- Dockerfile path: `Dockerfile.bot`
+- Dockerfile path: `Dockerfile.bot` (NOT `Dockerfile` — that is the agent API)
 - Root directory: `/` (repo root, NOT `packages/bot`)
+- Config file (optional): `railway.bot.toml`
+
+> **Important:** Do not put `TELEGRAM_BOT_TOKEN` on the agent service. Only the `clawcfo-bot` service runs the Telegram bot.
 
 **Variables** tab:
 ```
@@ -45,6 +48,18 @@ TELEGRAM_BOT_USERNAME=my_mantle_cfo_bot
 Open Telegram → search `@my_mantle_cfo_bot` → `/start`
 
 You should see the welcome menu with Add Rule / Run Agent buttons.
+
+## Bot not responding? Check this
+
+1. **Correct service** — variables must be on `clawcfo-bot`, not `personal-cfo/agent` or `clawcfo`
+2. **Correct Dockerfile** — `Dockerfile.bot` (service can show Online but still not be the bot)
+3. **Real token** — not `your_bot_token_from_botfather`
+4. **Redeploy** — after changing Variables, click **Deploy** / **Redeploy**
+5. **Logs** — open `clawcfo-bot` → **Deployments** → **View Logs**. You should see:
+   - `Health server listening on ...`
+   - `Telegram bot @my_mantle_cfo_bot started`
+6. **No local bot** — stop `npm run dev:bot` on your PC (same token = conflict)
+7. **AGENT_API_URL** must be `https://personal-cfoagent-production.up.railway.app` (agent can be offline in logs but bot should still answer `/start`)
 
 ## Local dev (optional)
 
