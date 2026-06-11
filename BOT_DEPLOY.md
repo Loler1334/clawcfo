@@ -60,6 +60,7 @@ You should see the welcome menu with Add Rule / Run Agent buttons.
    - `Telegram bot @my_mantle_cfo_bot started`
 6. **No local bot** — stop `npm run dev:bot` on your PC (same token = conflict)
 7. **AGENT_API_URL** must be `https://personal-cfoagent-production.up.railway.app` (agent can be offline in logs but bot should still answer `/start`)
+8. **Build error `packages/bot/package.json not found`** — `.dockerignore` must not exclude `packages/bot` (needed by `Dockerfile.bot`)
 
 ## Local dev (optional)
 
